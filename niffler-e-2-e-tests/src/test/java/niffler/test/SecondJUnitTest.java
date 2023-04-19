@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(CallbacksExtension.class)
-public class SecondJUnitTest extends BaseTest {
+public class SecondJUnitTest extends BaseWebTest {
 
   @AfterAll
   static void afterAll() {

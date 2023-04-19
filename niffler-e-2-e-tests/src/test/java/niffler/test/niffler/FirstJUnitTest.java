@@ -1,7 +1,7 @@
 package niffler.test.niffler;
 
 import niffler.jupiter.CallbacksExtension;
-import niffler.test.BaseTest;
+import niffler.test.BaseWebTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith({CallbacksExtension.class})
-public class FirstJUnitTest extends BaseTest {
+public class FirstJUnitTest extends BaseWebTest {
 
   @AfterAll
   static void afterAll() {

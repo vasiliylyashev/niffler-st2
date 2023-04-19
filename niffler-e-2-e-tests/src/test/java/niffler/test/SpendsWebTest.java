@@ -7,18 +7,23 @@ import static com.codeborne.selenide.Selenide.$$;
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
+import niffler.data.User;
+import niffler.jupiter.GenerateCategory;
+import niffler.jupiter.GenerateCategoryExtension;
 import niffler.jupiter.GenerateSpend;
 import niffler.jupiter.GenerateSpendExtension;
 import niffler.model.CurrencyValues;
 import niffler.model.SpendJson;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@Disabled
+
+@ExtendWith(GenerateCategoryExtension.class)
 @ExtendWith(GenerateSpendExtension.class)
 public class SpendsWebTest {
+
+    public static final User user = new User("TEST_USER", "12345");;
 
     static {
         Configuration.browserSize = "1920x1080";
@@ -28,17 +33,26 @@ public class SpendsWebTest {
     void doLogin() {
         Selenide.open("http://127.0.0.1:3000/main");
         $("a[href*='redirect']").click();
-        $("input[name='username']").setValue("dima");
-        $("input[name='password']").setValue("12345");
+        $("input[name='username']").setValue(user.getName());
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        $("input[name='password']").setValue(user.getPassword());
         $("button[type='submit']").click();
     }
 
+    @GenerateCategory(
+        username = "TEST_USER",
+        category = "Automation Testing Course QA.GURU"
+    )
     @GenerateSpend(
-        username = "dima",
+        username = "TEST_USER",
         description = "QA GURU ADVANCED VOL 2",
         currency = CurrencyValues.RUB,
-        amount = 52000.00,
-        category = "Обучение"
+        amount = 54950.00,
+        category = "Automation Testing Course QA.GURU"
     )
     @Test
     void spendShouldBeDeletedByActionInTable(SpendJson spend) {
