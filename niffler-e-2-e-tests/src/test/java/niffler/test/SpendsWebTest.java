@@ -12,8 +12,7 @@ import niffler.jupiter.annotation.GenerateSpend;
 import niffler.data.User;
 import niffler.jupiter.GenerateCategory;
 import niffler.jupiter.GenerateCategoryExtension;
-import niffler.jupiter.GenerateSpend;
-import niffler.jupiter.GenerateSpendExtension;
+import niffler.jupiter.extension.GenerateSpendExtension;
 import niffler.model.CurrencyValues;
 import niffler.model.SpendJson;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(GenerateSpendExtension.class)
 public class SpendsWebTest  extends BaseWebTest {
 
-    public static final User user = new User("TEST_USER", "12345");;
+    public static final User user = new User("TEST_USER", "12345");
 
     static {
         Configuration.browserSize = "1920x1080";
