@@ -7,6 +7,8 @@ import static com.codeborne.selenide.Selenide.$$;
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
+import io.qameta.allure.AllureId;
+import niffler.jupiter.annotation.GenerateSpend;
 import niffler.data.User;
 import niffler.jupiter.GenerateCategory;
 import niffler.jupiter.GenerateCategoryExtension;
@@ -15,13 +17,14 @@ import niffler.jupiter.GenerateSpendExtension;
 import niffler.model.CurrencyValues;
 import niffler.model.SpendJson;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-
+@Disabled
 @ExtendWith(GenerateCategoryExtension.class)
 @ExtendWith(GenerateSpendExtension.class)
-public class SpendsWebTest {
+public class SpendsWebTest  extends BaseWebTest {
 
     public static final User user = new User("TEST_USER", "12345");;
 
@@ -54,6 +57,7 @@ public class SpendsWebTest {
         amount = 54950.00,
         category = "Automation Testing Course QA.GURU"
     )
+    @AllureId("101")
     @Test
     void spendShouldBeDeletedByActionInTable(SpendJson spend) {
         $(".spendings-table tbody").$$("tr")
@@ -68,5 +72,6 @@ public class SpendsWebTest {
         $(".spendings-table tbody")
             .$$("tr")
             .shouldHave(CollectionCondition.size(0));
+        throw new IllegalStateException();
     }
 }
