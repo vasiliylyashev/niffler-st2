@@ -1,4 +1,4 @@
-package niffler.test;
+package niffler.test.ui;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
@@ -10,14 +10,15 @@ import io.qameta.allure.AllureId;
 import java.io.IOException;
 import niffler.jupiter.annotation.ClasspathUser;
 import niffler.model.UserJson;
+import niffler.test.BaseWebTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class LoginTest extends BaseWebTest {
   
   @ValueSource(strings = {
-      "testdata/dima.json",
-      "testdata/emma.json"
+          "testdata/updateProfile/positive_full.json",
+          "testdata/updateProfile/only_name.json"
   })
   @AllureId("104")
   @ParameterizedTest
