@@ -10,20 +10,17 @@ import com.codeborne.selenide.Selenide;
 import io.qameta.allure.AllureId;
 import niffler.jupiter.annotation.GenerateSpend;
 import niffler.data.User;
-import niffler.jupiter.GenerateCategory;
-import niffler.jupiter.GenerateCategoryExtension;
-import niffler.jupiter.extension.GenerateSpendExtension;
+import niffler.jupiter.annotation.GenerateCategory;
+import niffler.jupiter.annotation.WebTest;
 import niffler.model.CurrencyValues;
 import niffler.model.SpendJson;
 import niffler.test.BaseWebTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @Disabled
-@ExtendWith(GenerateCategoryExtension.class)
-@ExtendWith(GenerateSpendExtension.class)
+@WebTest
 public class SpendsWebTest  extends BaseWebTest {
 
     public static final User user = new User("TEST_USER", "12345");
@@ -37,11 +34,6 @@ public class SpendsWebTest  extends BaseWebTest {
         Selenide.open("http://127.0.0.1:3000/main");
         $("a[href*='redirect']").click();
         $("input[name='username']").setValue(user.getName());
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         $("input[name='password']").setValue(user.getPassword());
         $("button[type='submit']").click();
     }
@@ -62,7 +54,7 @@ public class SpendsWebTest  extends BaseWebTest {
     void spendShouldBeDeletedByActionInTable(SpendJson spend) {
         $(".spendings-table tbody").$$("tr")
             .find(text(spend.getDescription()))
-            .$$("td").first()
+            .$("td")
             .scrollTo()
             .click();
 
@@ -72,6 +64,5 @@ public class SpendsWebTest  extends BaseWebTest {
         $(".spendings-table tbody")
             .$$("tr")
             .shouldHave(CollectionCondition.size(0));
-        throw new IllegalStateException();
     }
 }

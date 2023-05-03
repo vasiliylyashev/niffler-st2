@@ -4,56 +4,126 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
 import javax.sql.DataSource;
 import niffler.db.DataSourceProvider;
 import niffler.db.ServiceDB;
+import niffler.db.entity.AuthorityEntity;
 import niffler.db.entity.UserEntity;
+import niffler.model.CurrencyValues;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class NifflerUsersDAOJdbc implements NifflerUsersDAO {
+  PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
   private static final DataSource ds = DataSourceProvider.INSTANCE.getDataSource(ServiceDB.NIFFLER_AUTH);
-  private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-
   @Override
-  public int createUser(UserEntity user) {
-    int executeUpdate;
-
+  public UserEntity readUser(String username){
+    ResultSet result;
+    UserEntity selectedUser = new UserEntity();
     try (Connection conn = ds.getConnection();
-        PreparedStatement st = conn.prepareStatement("INSERT INTO users "
-            + "(username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired) "
-            + " VALUES (?, ?, ?, ?, ?, ?)")) {
-      st.setString(1, user.getUsername());
-      st.setString(2, pe.encode(user.getPassword()));
-      st.setBoolean(3, user.getEnabled());
-      st.setBoolean(4, user.getAccountNonExpired());
-      st.setBoolean(5, user.getAccountNonLocked());
-      st.setBoolean(6, user.getCredentialsNonExpired());
+         PreparedStatement st = conn.prepareStatement("SELECT username, currency, firstname, surname, photo" +
+                 "FROM public.users WHERE username=?;")) {
+      st.setString(1, username);
 
-      executeUpdate = st.executeUpdate();
+      result = st.executeQuery();
+
+      while (result.next()){
+        selectedUser.setUsername(result.getString(1));
+        selectedUser.setCurrency(CurrencyValues.valueOf(result.getString(2)));
+        selectedUser.setFirstname(result.getString(3));
+        selectedUser.setSurname(result.getString(4));
+        selectedUser.setPhoto(result.getString(5).getBytes());
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+    return selectedUser;
+  }
+  @Override
+  public int deleteUser(UserEntity user) throws SQLException {
+    int executeUpdate;
 
-    String insertAuthoritiesSql = "INSERT INTO authorities (user_id, authority) VALUES ('%s', '%s')";
+    try (Connection conn = ds.getConnection()){
+      conn.setAutoCommit(false);
+      try(PreparedStatement st = conn.prepareStatement("DELETE FROM users WHERE username=?");
+              PreparedStatement st2 = conn.prepareStatement("DELETE FROM authorities WHERE user_id=? AND authority=?");){
+          st.setString(1, user.getUsername());
+          for(AuthorityEntity au : user.getAuthorities()){
+            st2.setString(1, user.getUsername());
+            st2.setString(2, au.toString());
+            st2.addBatch();
+          }
+          st2.executeBatch();
+          executeUpdate = st.executeUpdate();
+          if (executeUpdate > 0) {
+            System.out.println("An existing user was updated successfully!");
+          }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    return executeUpdate;
+  }
+  }
 
-    final String finalUserId = getUserId(user.getUsername());
-    List<String> sqls = user.getAuthorities()
-        .stream()
-        .map(ae -> ae.getAuthority().name())
-        .map(a -> String.format(insertAuthoritiesSql, finalUserId, a))
-        .toList();
+  @Override
+  public int updateUser(UserEntity user){
+    int executeUpdate;
 
-    for (String sql : sqls) {
-      try (Connection conn = ds.getConnection();
-          Statement st = conn.createStatement()) {
-        st.executeUpdate(sql);
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
+    try (Connection conn = ds.getConnection();
+         PreparedStatement st = conn.prepareStatement("UPDATE users SET"
+                 + " password=?, enabled=?, account_non_expired=?, account_non_locked=?, credentials_non_expired=? "
+                 + " WHERE username=?")) {
+      st.setString(6, user.getUsername());
+      st.setString(1, user.getPassword());
+      st.setBoolean(2, user.getEnabled());
+      st.setBoolean(3, user.getAccountNonExpired());
+      st.setBoolean(4, user.getAccountNonLocked());
+      st.setBoolean(5, user.getCredentialsNonExpired());
+
+      executeUpdate = st.executeUpdate();
+      if (executeUpdate > 0) {
+        System.out.println("An existing user was updated successfully!");
       }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    return executeUpdate;
+  }
+  @Override
+  public int createUser(UserEntity user) {
+    int executeUpdate = 0;
+
+    try (Connection conn = ds.getConnection()){
+      conn.setAutoCommit(false);
+      try (
+              PreparedStatement st = conn.prepareStatement("INSERT INTO users "
+                      + "(username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired) "
+                      + " VALUES (?, ?, ?, ?, ?, ?)");
+              PreparedStatement st2 = conn
+                      .prepareStatement("INSERT INTO authorities (user_id, authority) VALUES (?, ?)")) {
+        st.setString(1, user.getUsername());
+        st.setString(2, pe.encode(user.getPassword()));
+        st.setBoolean(3, user.getEnabled());
+        st.setBoolean(4, user.getAccountNonExpired());
+        st.setBoolean(5, user.getAccountNonLocked());
+        st.setBoolean(6, user.getCredentialsNonExpired());
+        executeUpdate = st.executeUpdate();
+        conn.commit();
+        final String userId = getUserId(user.getUsername());
+        for(AuthorityEntity au : user.getAuthorities()){
+          st2.setString(1, userId);
+          st2.setString(2, au.getAuthority().name());
+          st2.addBatch();
+        }
+        st2.executeBatch();
+      } catch (SQLException e) {
+        conn.rollback();
+        conn.setAutoCommit(true);
+      }
+      conn.commit();
+      conn.setAutoCommit(true);
+    } catch (SQLException e){
     }
     return executeUpdate;
   }

@@ -1,31 +1,23 @@
 package niffler.db.entity;
 
-import static jakarta.persistence.FetchType.EAGER;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import niffler.model.CurrencyValues;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class UserEntity {
-
   private UUID id;
   private String username;
-  private String password;
+  private String firstname;
+  private String surname;
+  private CurrencyValues currency;
+  private byte[] photo;
+  private  String password;
   private Boolean enabled;
   private Boolean accountNonExpired;
   private Boolean accountNonLocked;
   private Boolean credentialsNonExpired;
   private List<AuthorityEntity> authorities = new ArrayList<>();
-
   public UUID getId() {
     return id;
   }
@@ -88,5 +80,37 @@ public class UserEntity {
 
   public void setAuthorities(List<AuthorityEntity> authorities) {
     this.authorities = authorities;
+  }
+
+  public String getFirstname() {
+    return firstname;
+  }
+
+  public void setFirstname(String firstname) {
+    this.firstname = firstname;
+  }
+
+  public String getSurname() {
+    return surname;
+  }
+
+  public void setSurname(String surname) {
+    this.surname = surname;
+  }
+
+  public CurrencyValues getCurrency() {
+    return currency;
+  }
+
+  public void setCurrency(CurrencyValues currency) {
+    this.currency = currency;
+  }
+
+  public byte[] getPhoto() {
+    return photo;
+  }
+
+  public void setPhoto(byte[] photo) {
+    this.photo = photo;
   }
 }

@@ -31,15 +31,4 @@ public class ExtensionContextTest {
     void test1() {
         System.out.println("      --->>> @Test test1()");
     }
-
-//    @Test
-//    void test2() {
-//        System.out.println("      --->>> @Test test2()");
-//    }
-//
-//    @Test
-//    void test3() {
-//        System.out.println("      --->>> @Test test3()");
-//    }
-
 }

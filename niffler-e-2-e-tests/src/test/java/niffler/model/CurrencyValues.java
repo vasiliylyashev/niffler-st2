@@ -1,5 +1,10 @@
 package niffler.model;
 
 public enum CurrencyValues {
-    RUB, USD, EUR, KZT
+    RUB ("RUB"),
+    USD ("USD"),
+    EUR("EUR"),
+    KZT("KZT");
+
+    CurrencyValues(String rub) {}
 }

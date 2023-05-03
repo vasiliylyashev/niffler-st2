@@ -28,7 +28,6 @@ public class LoginTest extends BaseWebTest {
     $("input[name='username']").setValue(user.getUsername());
     $("input[name='password']").setValue(user.getPassword());
     $("button[type='submit']").click();
-
     $("a[href*='friends']").click();
     $(".header").should(visible).shouldHave(text("Niffler. The coin keeper."));
   }
