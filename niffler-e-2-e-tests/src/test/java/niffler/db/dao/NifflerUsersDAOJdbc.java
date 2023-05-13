@@ -47,21 +47,23 @@ public class NifflerUsersDAOJdbc implements NifflerUsersDAO {
     try (Connection conn = ds.getConnection()){
       conn.setAutoCommit(false);
       try(PreparedStatement st = conn.prepareStatement("DELETE FROM users WHERE username=?");
-              PreparedStatement st2 = conn.prepareStatement("DELETE FROM authorities WHERE user_id=? AND authority=?");){
+              PreparedStatement st2 = conn.prepareStatement("DELETE FROM authorities WHERE user_id::text like ? AND authority=?");){
           st.setString(1, user.getUsername());
           for(AuthorityEntity au : user.getAuthorities()){
-            st2.setString(1, user.getUsername());
-            st2.setString(2, au.toString());
+            st2.setString(1, getUserId(user.getUsername()));
+            st2.setString(2, au.getAuthority().name());
             st2.addBatch();
           }
           st2.executeBatch();
           executeUpdate = st.executeUpdate();
           if (executeUpdate > 0) {
-            System.out.println("An existing user was updated successfully!");
+            System.out.println("User "+user.getUsername()+" was DELETED from DB successfully!");
           }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+      conn.commit();
+      conn.setAutoCommit(true);
     return executeUpdate;
   }
   }

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.*;
 
 import java.util.Arrays;
 
-public class CreateUserExtension implements ParameterResolver, BeforeEachCallback {
+public class CreateUserExtension implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
     public static ExtensionContext.Namespace NAMESPACE_CREATE_USER = ExtensionContext.Namespace
         .create(CreateUserExtension.class);
     @Override
@@ -42,6 +42,16 @@ public class CreateUserExtension implements ParameterResolver, BeforeEachCallbac
             jdbc.createUser(user);
             context.getStore(NAMESPACE_CREATE_USER).put("user", user);
         }
+    }
+
+    @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+
+
+//        if (annotation != null) {
+//            NifflerUsersDAOJdbc jdbc = new NifflerUsersDAOJdbc();
+//            jdbc.deleteUser(context.getStore(NAMESPACE_CREATE_USER).get("user", UserEntity.class));
+//        }
     }
 
     @Override

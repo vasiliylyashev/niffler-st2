@@ -15,7 +15,9 @@ public class LoginNewUserTest extends BaseWebTest {
   @Test
   @CreateUser
   void loginWithJustCreatedUserTest(UserEntity user)  {
-    Allure.step("open page", () -> Selenide.open("http://127.0.0.1:3000/main"));
+    Allure.step("open page", () ->
+            Selenide.open("http://127.0.0.1:3000/main"));
+
     $("a[href*='redirect']").click();
     $("input[name='username']").setValue(user.getUsername());
     $("input[name='password']").setValue(user.getPassword());
@@ -24,5 +26,4 @@ public class LoginNewUserTest extends BaseWebTest {
     $("a[href*='friends']").click();
     $(".header").should(visible).shouldHave(text("Niffler. The coin keeper."));
   }
-
 }

@@ -22,7 +22,7 @@ public class FriendsWebTest extends BaseWebTest {
   @AllureId("102")
   @Test
   void friendsShouldBeVisible0(@User(userType = WITH_FRIENDS) UserJson user,
-                               @User(userType = INVITATION_SENT) UserJson user2) {
+                               @User(userType = WITH_FRIENDS) UserJson user2) {
     Allure.step("open page", () -> Selenide.open("http://127.0.0.1:3000/main"));
     $("a[href*='redirect']").click();
     System.out.println(user.getFirstname());

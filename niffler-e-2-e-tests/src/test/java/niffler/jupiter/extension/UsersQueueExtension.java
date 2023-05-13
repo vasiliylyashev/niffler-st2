@@ -42,10 +42,10 @@ public class UsersQueueExtension implements
   public void beforeEach(ExtensionContext context)  {
     final String testId = getTestId(context);
     Parameter[] testParameters = context.getRequiredTestMethod().getParameters();
-    Map<UserType, UserJson> users = new HashMap<>();
+    HashMap<Map<UserType, UserJson>, Boolean> usersList = new HashMap<>();
     for (Parameter parameter : testParameters) {
       User desiredUser = parameter.getAnnotation(User.class);
-      if (desiredUser != null) {
+      if (null != desiredUser) {
         UserType userType = desiredUser.userType();
         UserJson user = null;
         while (user == null) {
@@ -55,24 +55,28 @@ public class UsersQueueExtension implements
             case INVITATION_RECEIVED -> user = USERS_INVITATION_RECEIVED_QUEUE.poll();
           }
         }
-        users.put(userType, user);
+        HashMap<UserType, UserJson> map = new HashMap<>();
+        map.put(userType, user);
+        usersList.put(map, false);
       }
     }
-    context.getStore(USER_EXTENSION_NAMESPACE).put(testId, users);
+    context.getStore(USER_EXTENSION_NAMESPACE).put(testId, usersList);
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public void afterTestExecution(ExtensionContext context)  {
     final String testId = getTestId(context);
-    Map<UserType, UserJson> usersMap = (Map<UserType, UserJson>) context.getStore(USER_EXTENSION_NAMESPACE)
-        .get(testId);
-    for (Map.Entry<UserType, UserJson> user : usersMap.entrySet()) {
-      UserType userType = usersMap.keySet().iterator().next();
-      switch (userType) {
-        case WITH_FRIENDS -> USERS_WITH_FRIENDS_QUEUE.add(user.getValue());
-        case INVITATION_SENT -> USERS_INVITATION_SENT_QUEUE.add(user.getValue());
-        case INVITATION_RECEIVED -> USERS_INVITATION_RECEIVED_QUEUE.add(user.getValue());
+    HashMap<Map<UserType, UserJson>, Boolean> usersList = (HashMap<Map<UserType, UserJson>, Boolean>)context.getStore(USER_EXTENSION_NAMESPACE)
+            .get(testId);
+    for(Map.Entry<Map<UserType, UserJson>, Boolean> usersMap : usersList.entrySet()){
+      for (Map.Entry<UserType, UserJson> user : usersMap.getKey().entrySet()) {
+        UserType userType = user.getKey();
+        switch (userType) {
+          case WITH_FRIENDS -> USERS_WITH_FRIENDS_QUEUE.add(user.getValue());
+          case INVITATION_SENT -> USERS_INVITATION_SENT_QUEUE.add(user.getValue());
+          case INVITATION_RECEIVED -> USERS_INVITATION_RECEIVED_QUEUE.add(user.getValue());
+        }
       }
     }
 }
@@ -89,11 +93,23 @@ public class UsersQueueExtension implements
   public UserJson resolveParameter(ParameterContext parameterContext,
       ExtensionContext extensionContext) throws ParameterResolutionException {
     final String testId = getTestId(extensionContext);
-    Map<UserType, UserJson> usersMap = (Map<UserType, UserJson>) extensionContext.getStore(USER_EXTENSION_NAMESPACE)
+    UserJson requiredUser = null;
+    HashMap<Map<UserType, UserJson>, Boolean> usersList = (HashMap<Map<UserType, UserJson>, Boolean>) extensionContext.getStore(USER_EXTENSION_NAMESPACE)
             .get(testId);
     Parameter parameter = extensionContext.getRequiredTestMethod().getParameters()[parameterContext.getIndex()];
     String userType = ((User)parameter.getDeclaredAnnotations()[0]).userType().name();
-    return usersMap.get(UserType.valueOf(userType));
+
+    for (Map.Entry<Map<UserType, UserJson>, Boolean> entry :
+            usersList.entrySet()) {
+      if(entry.getValue().equals(false)){
+        if(entry.getKey().keySet().stream().findFirst().get().name().equals(userType)){
+          requiredUser = entry.getKey().get(UserType.valueOf(userType));
+          entry.setValue(true);
+          break;
+        }
+      }
+    }
+    return requiredUser;
   }
 
   private String getTestId(ExtensionContext context) {
